@@ -117,7 +117,6 @@ def singletiff(pathname,sigma, lt, ut, minlen, linkthresh, logim = False):
                 
                 
             ##Get the splinefit for the image
-            print(x,y)
             new_points1,der_points1 = RF.getspline(x,y,ss=2)
             Bragg = RF.simplebragg(new_points1[0],new_points1[1],img)
             
