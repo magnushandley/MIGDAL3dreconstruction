@@ -21,11 +21,7 @@ def singletiff(pathname,sigma, lt, ut, minlen, linkthresh, logim = False):
     '''
     Create a figure containing the image of the particle track and its
     ridgeline. Two plots are produced in this figure. One is in linear space
-    and the other is in log space. On both, the unlinked and linked ridges are
-    plotted. The linked are plotted as a thin white line overlayed on the
-    colored points of the unlinked lines.
-
-    This can be iterated through.
+    and the other is the bragg curve. 
 
     Parameters
     ----------
@@ -104,47 +100,12 @@ def singletiff(pathname,sigma, lt, ut, minlen, linkthresh, logim = False):
 
     ax1.imshow(img*100, cmap="magma")
     ax1.set_title('Linear Scaling')
-#    ax2.imshow(img3, cmap="magma")
-#    ax2.set_title('Logarithmic Scaling')
-#    lim =RF.get_lines_bounding_box(lines)
+
     ax2.set_title('Bragg Curve')
     lim =RF.get_lines_bounding_box(lines)
 
 
     ##Run through all ridges found in image
-
-    ##Create and plot the splinefit for all unlinked ridgepoints
-#    for i, line in enumerate(lines):
-#        if len(line[1]) > minlen:
-#
-#           ax1.set_xlim(lim)
-#           ax1.set_ylim(lim)
-##          ax2.set_xlim(lim)
-##          ax2.set_ylim(lim)
-#
-#           x = px[line[1], line[0]]
-#           y = py[line[1], line[0]]
-#
-#           ##Get the splinefit for the image
-#           try:
-#               new_points,der_points = RF.getspline(x,y,ss=1)
-#               ax1.plot(new_points[1],new_points[0],'.')
-##              ax2.plot(new_points[1],new_points[0],'.')
-#           except Exception as e: print(e)
-
-    ##Create and plot the splinefit for all linked ridgepoints
-#    for i, line in enumerate(nlines):
-#        if len(line[1]) > minlen:
-#
-#                x = px[line[1], line[0]]
-#                y = py[line[1], line[0]]
-#
-#                ##Get the splinefit for the image
-#                try:
-#                    new_points1,der_points1 = RF.getspline(x,y,ss=2)
-#                    ax1.plot(new_points1[1],new_points1[0],'-',color='white')
-#                    ax2.plot(new_points1[1],new_points1[0],'-',color='white')
-#                except Exception as e: print(e)
 
     for i, line in enumerate(nlines):
         if len(line[1]) > minlen:
@@ -171,7 +132,6 @@ def singletiff(pathname,sigma, lt, ut, minlen, linkthresh, logim = False):
                 new_points1[0]=new_points1[0]
                 
             ax1.plot(new_points1[1],new_points1[0],'-',color='white')
-            # ax2.plot(new_points1[1],new_points1[0],'-',color='white')
             Bragg = RF.simplebragg(new_points1[0],new_points1[1],img)
 
             indir,(x0,y0) = RF.initdir_simdat(new_points1[1],new_points1[0],pix=1)
@@ -195,25 +155,19 @@ def singletiff(pathname,sigma, lt, ut, minlen, linkthresh, logim = False):
             ax2.plot(Bragg,label=str(i))
             ax2.set_xlabel("Length along Track")
             ax2.set_ylabel("Pixel Intensity")
-            # indir = indir*180/np.pi
+
             ax1.legend()
             ax2.legend()
             print(indir)
 
                     
     plt.show()
-    plt.pause(0.1) ##This command allows the cycling to actually happen
+
     return()
     
 def energydeposition(pathname,sigma, lt, ut, minlen, linkthresh,offsetdistance, logim = False):
     '''
-    Create a figure containing the image of the particle track and its
-    ridgeline. Two plots are produced in this figure. One is in linear space
-    and the other is in log space. On both, the unlinked and linked ridges are
-    plotted. The linked are plotted as a thin white line overlayed on the
-    colored points of the unlinked lines.
-
-    This can be iterated through.
+    Same as above, but displaying the energy of each event.
 
     Parameters
     ----------
@@ -372,7 +326,36 @@ def energydeposition(pathname,sigma, lt, ut, minlen, linkthresh,offsetdistance, 
     plt.pause(0.1) ##This command allows the cycling to actually happen
     return()
  
-def returnlines(pathname,sigma, lt, ut, minlen, linkthresh, logim = False, trackid = "All"):
+def returnlines(pathname,sigma, lt, ut, minlen, linkthresh, logim = False, trackid = 0):
+    '''
+    Returns the x and y arrays of the coordinates of the ridge
+
+    Parameters
+    ----------
+    pathname : str
+        Location of the image files to be analysed.
+    sigma : float
+        Sigma for derivative determination (somehow relate to track width).
+    lt : float
+        Lower threshold for the ridgefinding algorithm.
+        This excludes tracks whose hessian eigenvalues fall below lthresh.
+    ut : float
+        Upper threshold for the ridgefinding algorithm.
+        This excludes tracks whose hessian eigenvalues exceed uthresh.
+    minlen : int
+        Minimum track length accepted.
+    linkthresh : int
+        The maximum distance between endpoints allowed for linking ridges.
+    logim : BOOL, optional
+        Do you want the RidgeFinder to operate on the image in log space?
+        The default is False.
+
+    Returns
+    -------
+    x, y: float
+    numpy arrays containing the x and y coordinates of the ridge.
+
+    '''
     img = io.imread(pathname)
     imnumb = os.path.basename(pathname) ## Get image name
     img = img/20 ## Scale the image
@@ -414,7 +397,7 @@ def returnlines(pathname,sigma, lt, ut, minlen, linkthresh, logim = False, track
     y = []
     
     for i, line in enumerate(nlines):
-        if (len(line[1]) > minlen):
+        if (len(line[1]) > minlen) and (i == trackid)):
             
             newx = px[line[1], line[0]]
             newy = py[line[1], line[0]]
