@@ -263,6 +263,8 @@ class ITO:
         eventdata = np.zeros((60,1000))
         for i in range(60):
             eventdata[i] = data[i][1]
+            offsetmean = np.mean(eventdata[i][:200])
+            eventdata[i] = np.subtract(eventdata[i], offsetmean)
         plt.pcolormesh(eventdata, cmap='inferno')
         plt.xlabel("Time [samples]")
         plt.ylabel("Strip number")
