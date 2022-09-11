@@ -396,7 +396,7 @@ def returnlines(pathname,sigma, lt, ut, minlen, linkthresh, logim = False, track
     y = []
     
     for i, line in enumerate(nlines):
-        if len(line[1]) > minlen) and (i == trackid):
+        if (len(line[1]) > minlen) and (i == trackid):
             
             newx = px[line[1], line[0]]
             newy = py[line[1], line[0]]
